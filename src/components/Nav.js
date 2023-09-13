@@ -1,4 +1,4 @@
-import { faArrowRightFromBracket, faLock, faUser } from '@fortawesome/free-solid-svg-icons';
+import { faArrowRightFromBracket, faLock, faUser, faChevronDown } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useState } from 'react'
 import { NavLink } from 'react-router-dom';
@@ -43,6 +43,13 @@ const NavList = styled.div`
         } // li
     } // ul
 `;
+const StyledIcon = styled(FontAwesomeIcon)`
+    transition: all 0.5s;
+    font-size: 12px;
+    vertical-align: baseline;
+    /* transform: ${({$isopen}) => ($isopen === "false" ? "rotate(0)" : "rotate(-180deg)")}; */
+    transform: rotate(${({$isopen}) => $isopen === "true" ? '180deg' : '0'});
+`;
 const NavSubmenu = styled.ul`
     position: absolute;
     background-color: rgba(30, 41, 59);
@@ -67,10 +74,99 @@ const NavMember = styled.div`
     ul {
         display: flex;
         column-gap: 20px;
-
-        @media screen and (max-width: 768px) {
-            display: none;
+        a.active {
+            font-weight: bold;
         }
+    } // ul
+`;
+const Hamburger = styled.div`
+    position: fixed;
+    right: 16px;
+    top: 24px;
+    transition: all 1s;
+    z-index: 50;
+    cursor: pointer;
+    > div {
+        width: 30px;
+        height: 2px;
+        background-color: #000;
+        border-radius: 4px;
+        margin: 6px;
+        transition: all 1s;
+    } // > div
+    &.on div:nth-child(1) {
+        transform: rotate(45deg) translateY(12px);
+    }
+    &.on div:nth-child(2) {
+        opacity: 0; transform: translateX(-30px) rotate(720deg);
+    }
+    &.on div:nth-child(3) {
+        transform: rotate(-45deg) translateY(-12px);
+    }
+    @media screen and (min-width: 1024px) {
+        display: none;
+    }
+    @media screen and (max-width: 768px) {
+        right: 24px;
+    }
+`;
+const Container = styled.div`
+    width: 320px;
+    height: 100%;
+    position: fixed;
+    background-color: rgb(249, 250, 251);
+    /* right: -320px; */
+    right: ${({$isopen}) => $isopen ? "0" : "-320px"};
+    top: 0;
+    padding: 48px;
+    box-sizing: border-box;
+    z-index: 40;
+    transition: all 0.5s;
+    
+
+    @media screen and (min-width: 1024px) {
+        display: none;
+    }
+    > ul {
+        margin-top: 24px;
+        > li {
+            padding: 20px;
+            border-bottom: 1px solid #ddd;
+            font-weight: bold;
+            cursor: pointer;
+        } // > li
+    } // > ul
+`;
+const Msubmenu = styled(NavSubmenu)`
+    width: 100%;
+    position: relative;
+    /* background: none; */
+    background-color: transparent;
+    text-align: left;
+    li {
+        padding-left: 15px;
+        font-weight: normal;
+        a {
+            color: #000;
+        } // a
+    } // li
+`;
+const MsubmenuMember = styled(NavMember)`
+    margin-top: 45px;
+    ul {
+        justify-content: center;
+        li {
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 4px;
+            background-color: salmon;
+            &:nth-child(2) {
+                background-color: steelblue;
+            } // &:nth-child(2)
+            a {
+                color: #fff;
+            } // a
+        } // li
     } // ul
 `;
 
@@ -86,6 +182,7 @@ function Nav() {
     }
 
     const [isActive, setIsActive] = useState(-1);
+    const [isActive2, setIsActive2] = useState(false);
     const SubData = {
         company : [
             {
@@ -208,7 +305,7 @@ function Nav() {
                                             SubMenuHeight(i);
                                         }} onMouseOut={() => {
                                             setIsActive(-1);
-                                        }} key={i}><NavLink to={`/${e.link}`}>{e.title}</NavLink>
+                                        }} key={i}><NavLink to={`/${e.link}`}>{e.title}</NavLink> <StyledIcon icon={faChevronDown} $isopen={isActive === i ? "true" : "false"} />
                                             <NavSubmenu className={`sub_list`}  $isopen = {isActive === i ? "true" : "false"} $height = {isHeight}> {/* $를 쓰면 속성으로 보이는것을 방지 */}
                                                 {
                                                     SubData[e.link].map((el, index) => {
@@ -241,7 +338,57 @@ function Nav() {
                 </NavWrap>
             </NavContent>
             {/* mobile nav */}
-            <Mnav />
+            <Hamburger onClick={() => {setIsActive2(!isActive2)}} className={isActive2 && 'on'}>
+                {/* {setIsActive2(isActive2 === false ? true : false)}
+                = {setIsActive2(!isActive2)} */}
+                {/* {isActive2 === true ? "on" : ""}
+                = {isActive2 && 'on'} */}
+                {
+                    Array(3).fill().map((_, i) => { // 실제 데이터가 필요하지 않을 때 e 대신 _를 쓸 수 있다. react에서는 선언하면 써야하기 때문에 안 쓰는 e를 대신해서 _를 쓴다.
+                        return (
+                            <div key={i}></div>
+                        )
+                    })
+                }
+            </Hamburger>
+            <Container $isopen = {isActive2}>
+                <MsubmenuMember>
+                    <ul>
+                        <li>
+                            <NavLink to ="/login">
+                                <FontAwesomeIcon icon={faLock}></FontAwesomeIcon> 로그인
+                            </NavLink>
+                        </li>
+                        <li>
+                            <NavLink to ="/member">
+                                <FontAwesomeIcon icon={faUser}></FontAwesomeIcon> 회원가입
+                            </NavLink>
+                        </li>
+                    </ul>
+                </MsubmenuMember>
+                <ul>
+                    {
+                        Nav.map((e, i) => {
+                            return (
+                                <li key={i} onClick={() => {
+                                    SubMenuHeight(i);
+                                    (isActive !== i ? setIsActive(i) : setIsActive(-1));
+                                }}>{e.title}
+                                    <Msubmenu className='sub_list' $isopen={isActive === i ? "true" : "false"} $height={isHeight}>
+                                        {
+                                            SubData[e.link].map((el, index) => {
+                                                return (
+                                                    <li key={index}><NavLink to="{el.link}">{el.title}</NavLink></li>
+                                                )
+                                            })
+                                        }
+                                    </Msubmenu>
+                                </li>
+                            )
+                        })
+                    }
+                </ul>
+            </Container>
             {/* mobile nav */}
         </>
     )
