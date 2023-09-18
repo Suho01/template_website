@@ -2,10 +2,24 @@ import { configureStore, createSlice } from "@reduxjs/toolkit";
 
 let user = createSlice({
     name : "user",
-    initialState : ["수호", "김준면"],
+    initialState : {
+        loggedIn : false,
+        data : null,
+        uid : null
+    },
     reducers : {
-        changeName(state) {
-            return ["테스트" + state];
+        logIn : (state, action) => {
+            state.loggedIn = true;
+            state.uid = action.payload;
+        },
+        loggedIn : (state, action) => {
+            state.loggedIn = true;
+            state.data = action.payload;
+        },
+        logOut : (state) => {
+            state.loggedIn = false;
+            state.data = null;
+            state.uid = null;
         }
     }
 });
@@ -18,6 +32,7 @@ let dark = createSlice({
     }
 });
 
+export const {logIn, logOut, loggedIn} = user.actions;
 export const {changeName} = user.actions;
 export const {toggleTheme} = dark.actions;
 

@@ -2,8 +2,11 @@ import React, { useState } from 'react'
 import styled from 'styled-components'
 import { firebaseAuth, signInWithEmailAndPassword } from './../firebase';
 import { useNavigate } from 'react-router-dom';
+import { collection, doc, getDoc, getFirestore } from 'firebase/firestore';
+import { useDispatch } from 'react-redux';
+import { logIn, loggedIn } from '../store';
 
-
+// 스타일 컴포넌트 기본 양식 const 작명 = styled.태그요소(div, p, h1...)``; 벡틱
 const Container = styled.div`
     display: flex;
     background-color: #f5f5f5;
@@ -81,29 +84,49 @@ const Button = styled.button`
 
 function Login() {
 
-    const [email, setEmail] = useState();
-    const [password, setPassword] = useState();
-    const [error, setError] = useState();
-    // const history = useHistory();
-    const navigate = useNavigate();
+    const [email, setEmail] = useState(); // 읽기전용 email : 바뀌지 않음, 쓰기전용 setEmail : 바뀔 수 있음을 useState의 빈 상태로 선언
+    const [password, setPassword] = useState(); // 읽기전용 password : 바뀌지 않음, 쓰기전용 setPassword : 바뀔 수 있음을 useState의 빈 상태로 선언
+    const [error, setError] = useState(); // 읽기전용 error : 바뀌지 않음, 쓰기전용 setError : 바뀔 수 있음을 useState의 빈 상태로 선언
+    // const history = useHistory(); 이 버전에서 이제는 안 쓴대 useNavigate로 쓰자
 
-    const errorMsg = (errorCode) => {
+    const navigate = useNavigate(); // useNavigate : 링크에서 쓰는 것
+    const dispatch = useDispatch(); // useDispatch : 리덕스에서 쓰는 거라고 함
+
+    const errorMsg = (errorCode) => { // errorMsg(작명) errorCode(정해진 것) 사용
         const firebaseError = {
             'auth/user-not-found' : "사용자를 찾을 수 없습니다.",
             'auth/wrong-password' : "이메일 혹은 비밀번호가 잘못되었습니다.",
             'auth/invalid-email' : "유효하지 않는 이메일입니다."
-        }
+        } // 정해진 에러메시지를 바꿔줌
         return firebaseError[errorCode] || '알 수 없는 에러가 발생했습니다.'
-    }
+    } // 작명해주지 않은 나머지 에러메시지 바꿔줌
 
     const LoginForm = async(e) => { // function 앞에 붙어야하는 async : 무언가 시도한다는 뜻, 성공과 실패를 try, catch로 함, 오류가 있을 수도 있지만 그래도 실행 try하고 오류가 있다면 catch를 실행한다.
-        e.preventDefault();
+        e.preventDefault(); // 새로고침 되지 않게 선언
         try {
             const userLogin = await signInWithEmailAndPassword(firebaseAuth, email, password); // async 안에서만 쓸수 있는 await, 단독으로 사용 못하고 function 내에서만 씀, 변수 선언 후 await가 붙음, await로 선언한 함수를 userLogin이 실행되기 전까지 기다림
+            
+            // alert("로그인되었습니다.");
+            // navigate('/');
+
             const user = userLogin.user;
             console.log(user);
+            sessionStorage.setItem("users", user.uid);
+            dispatch(logIn(user.uid));
+
+            const userDoc = doc(collection(getFirestore(), "users"), user.uid);
+            
+            const userDocSnapshot = await getDoc(userDoc);
+
+            if (userDocSnapshot.exists()) {
+                const userData = userDocSnapshot.data();
+                dispatch(loggedIn(userData));
+                navigate(-1); // 이전 페이지로 감(=게시판에 있다가 로그인하면 게시판으로 가고, 메인에 있다가 로그인하면 메인에 간다는 뜻)
+            }
+
         } catch(error) {
             setError(errorMsg(error.code));
+            console.log(error.code);
         }
     }
 

@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import { NavLink } from 'react-router-dom';
 import styled from 'styled-components'
 import Mnav from './Mnav';
+import { useSelector } from 'react-redux';
 
 
 const NavContent = styled.div`
@@ -170,8 +171,9 @@ const MsubmenuMember = styled(NavMember)`
     } // ul
 `;
 
-function Nav() {
+function Nav({userState}) {
 
+    // const userState = useSelector(state => state.user);
     const [isHeight, setIsHeight] = useState();
     const SubMenuHeight = (e) => {
         const list = document.querySelectorAll(".sub_list")[e];
@@ -324,8 +326,8 @@ function Nav() {
                     <NavMember>
                         <ul>
                             <li>
-                                <NavLink to ="/login">
-                                    <FontAwesomeIcon icon={faLock}></FontAwesomeIcon> 로그인
+                                <NavLink to ={userState.data?.nickname ? "./logout" : "./login"}>
+                                    <FontAwesomeIcon icon={faLock}></FontAwesomeIcon> {userState.data?.nickname ? "로그아웃" : "로그인"}
                                 </NavLink>
                             </li>
                             <li>
@@ -356,7 +358,7 @@ function Nav() {
                     <ul>
                         <li>
                             <NavLink to ="/login">
-                                <FontAwesomeIcon icon={faLock}></FontAwesomeIcon> 로그인
+                                <FontAwesomeIcon icon={faLock}></FontAwesomeIcon> {userState.data?.nickname ? "로그아웃" : "로그인"}
                             </NavLink>
                         </li>
                         <li>

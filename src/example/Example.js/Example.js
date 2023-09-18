@@ -22,12 +22,12 @@ function Example() {
             rejected(value[1]);
         }
     });
-    console.log(data);
+    // console.log(data);
     
     data.then(function() {
-        console.log("성공함");
+        // console.log("성공함");
     }).catch(function() {
-        console.log("오류");
+        // console.log("오류");
     });
 
     // 새로운 Promise 생성 : 1초 뒤에 성공 판정 콘솔창에 메시지
@@ -39,7 +39,7 @@ function Example() {
     });
 
     data2.then(function() {
-        console.log("성공");
+        // console.log("성공");
     });
 
     // 이미지가 로딩이 성공되었다면 성공판정, 실패했다면 실패판정
@@ -79,9 +79,9 @@ function Example() {
         .then(res => res.json())
         .then(data => setIsList(data))
         .catch(error => console.log(error))
-        .finally(() => {console.log("데이터 요청 완료");});
+        // .finally(() => {console.log("데이터 요청 완료");});
     }, []);
-    console.log(isList);
+    // console.log(isList);
 
     async function FetchData2() {
 
@@ -90,11 +90,11 @@ function Example() {
         try {
             let res = await fetch("https://jsonplaceholder.typicode.com/photos?albumId=1");
             let data = await res.json();
-            console.log(data);
+            // console.log(data);
         } catch(error) {
-            console.log(error);
+            // console.log(error);
         } finally {
-            console.log("데이터 요청 완료");
+            // console.log("데이터 요청 완료");
         }
     }
     FetchData();
