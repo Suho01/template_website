@@ -1,4 +1,4 @@
-import { faArrowRightFromBracket, faLock, faUser, faChevronDown } from '@fortawesome/free-solid-svg-icons';
+import { faArrowRightFromBracket, faLock, faUser, faChevronDown, faUserPen } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useState } from 'react'
 import { NavLink } from 'react-router-dom';
@@ -330,11 +330,20 @@ function Nav({userState}) {
                                     <FontAwesomeIcon icon={faLock}></FontAwesomeIcon> {userState.data?.nickname ? "로그아웃" : "로그인"}
                                 </NavLink>
                             </li>
-                            <li>
-                                <NavLink to ="/member">
-                                    <FontAwesomeIcon icon={faUser}></FontAwesomeIcon> 회원가입
-                                </NavLink>
-                            </li>
+                            {
+                                userState.data?.nickname ? // data에 nickname이 존재한다면(위에 써준 함수 따라씀 로그인이 되어있다는 뜻) true라면 로그인상태니까 정보수정, false라면 로그아웃상태니까 회원가입이라고 뜸
+                                <li>
+                                    <NavLink to ="/modify">
+                                        <FontAwesomeIcon icon={faUserPen}></FontAwesomeIcon> 정보수정
+                                    </NavLink>
+                                </li>
+                                :
+                                <li>
+                                    <NavLink to ="/member">
+                                        <FontAwesomeIcon icon={faUser}></FontAwesomeIcon> 회원가입
+                                    </NavLink>
+                                </li>
+                            }
                         </ul>
                     </NavMember>
                 </NavWrap>

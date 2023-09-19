@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 import { firebaseAuth, signInWithEmailAndPassword } from './../firebase';
-import { useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { collection, doc, getDoc, getFirestore } from 'firebase/firestore';
 import { useDispatch } from 'react-redux';
 import { logIn, loggedIn } from '../store';
@@ -52,6 +52,24 @@ const Input = styled.input`
 const InputWrapper = styled.div`
     position: relative;
     margin-bottom: 20px;
+    &:last-child {
+        margin-bottom: 0;
+        margin-top: 20px;
+        display: flex;
+        justify-content: flex-end;
+        column-gap: 20px;
+        a {
+            background-color: #40e0d0;
+            font-size: 14px;
+            text-align: center;
+            padding: 5px 20px;
+            border-radius: 5px;
+            color: #fff;
+            &:last-child {
+                background-color: #036;
+            } // &:last-child
+        } // a
+    } // &:last-child
     input:focus + label,
     input:not(:placeholder-shown) + label {
         top: 4px;
@@ -121,7 +139,7 @@ function Login() {
             if (userDocSnapshot.exists()) {
                 const userData = userDocSnapshot.data();
                 dispatch(loggedIn(userData));
-                navigate(-1); // 이전 페이지로 감(=게시판에 있다가 로그인하면 게시판으로 가고, 메인에 있다가 로그인하면 메인에 간다는 뜻)
+                navigate('-1'); // 이전 페이지로 감(=게시판에 있다가 로그인하면 게시판으로 가고, 메인에 있다가 로그인하면 메인에 간다는 뜻)
             }
 
         } catch(error) {
@@ -146,7 +164,10 @@ function Login() {
                         </InputWrapper>
                         <Button>로그인</Button>
                     </form>
-                    <p>{error}</p>
+                    <InputWrapper>
+                        <NavLink to="/findemail">이메일/비밀번호 재설정</NavLink>
+                        <NavLink to="/member">회원가입</NavLink>
+                    </InputWrapper>
                 </SignUp>
             </Container>
         </>
