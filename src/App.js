@@ -1,10 +1,10 @@
-import { NavLink, Route, Routes } from "react-router-dom";
+import { NavLink, Route, Routes, useNavigate } from "react-router-dom";
 import GlobalStyle from "./components/GlobalStyle";
 import Main from "./pages/Main";
 import Aside from "./components/Aside";
 import { ThemeProvider } from "styled-components";
 import Nav from "./components/Nav";
-import store, { loggedIn } from "./store";
+import store, { logIn, loggedIn } from "./store";
 import { Provider, useDispatch, useSelector } from "react-redux";
 import Member from "./pages/Member";
 import Login from "./pages/Login";
@@ -14,6 +14,16 @@ import { useEffect } from "react";
 import { collection, doc, getDoc, getFirestore } from "firebase/firestore";
 import Modify from "./pages/Modify";
 import Findemail from "./pages/Findemail";
+import Write from "./pages/Write";
+import Service from "./pages/Service";
+import Notice from "./pages/service/Notice";
+import Gallery from "./pages/service/Gallery";
+import Online from "./pages/service/Online";
+import Qna from "./pages/service/Qna";
+import View from "./pages/View";
+import { useState } from "react";
+import Modal from "./components/Modal";
+import NotPage from "./pages/NotPage";
 
 function App() {
     return (
@@ -49,14 +59,23 @@ function Inner() {
     const theme = useSelector(state => state.dark);
     const DarkMode = theme === 'light' ? light : dark;
     const userState = useSelector(state => state.user);
-    
-    console.log(userState);
 
     const dispatch = useDispatch(); // 스토리지값받아오기
     const uid = sessionStorage.getItem("users"); // uid(작명)에 스토리지의 user값 가져오기(get)
-    console.log(uid);
-
+    
+    // useEffect(() => {
+    //     if (uid) {
+    //         dispatch(logIn(uid));
+    //     }
+    // }, [uid, dispatch]);
+    
     useEffect(() => {
+
+        if (uid) {
+            dispatch(logIn(uid));
+        }
+
+        dispatch(logIn(uid));
         const fetchUser = async() => {
             if (!uid) return; // uid가 없다면 return
 
@@ -78,6 +97,9 @@ function Inner() {
         fetchUser();
     }, [dispatch, uid]); // []가 빈 괄호면 한 번만 실행, 값이 있으면 그 값이 바뀔 때마다 실행됨 - dispatch, uid값이 바뀔 때마다 실행한다는 뜻
 
+    const [isModal, setIsModal] = useState(true);
+    const navigate = useNavigate();
+
     return (
         <ThemeProvider theme={DarkMode}>
             <GlobalStyle />
@@ -89,8 +111,22 @@ function Inner() {
                 <Route path="/member" element={<Member/>}></Route>
                 <Route path="/login" element={<Login/>}></Route>
                 <Route path="/logout" element={<Logout/>}></Route>
-                <Route path="/modify" element={<Modify/>}></Route>
+                <Route path="/modify" element={<Member/>}></Route>
                 <Route path="/findemail" element={<Findemail/>}></Route>
+                <Route path="/write/:board" element={<Write />}></Route>
+                
+                <Route path="/view/:board/:view" element={<View />}></Route>
+                <Route path="/view/:board" element={isModal && <Modal error="유효하지 않은 경로입니다." onClose={() => {navigate('/');}} />}></Route>
+                
+                <Route path="/edit/:board/:view" element={<Write />}></Route>
+
+                <Route path="/service" element={<Service />}>
+                    <Route path="notice" element={<Notice />}></Route>
+                    <Route path="online" element={<Online />}></Route>
+                    <Route path="qna" element={<Qna />}></Route>
+                    <Route path="gallery" element={<Gallery />}></Route>
+                </Route>
+                <Route path="/*" element={<NotPage />}></Route>
             </Routes>
         </ThemeProvider>
     );

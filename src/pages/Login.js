@@ -1,10 +1,12 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
-import { firebaseAuth, signInWithEmailAndPassword } from './../firebase';
+import { GoogleAuthProvider, GithubAuthProvider, signInWithPopup, firebaseAuth, signInWithEmailAndPassword } from './../firebase';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { collection, doc, getDoc, getFirestore } from 'firebase/firestore';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { logIn, loggedIn } from '../store';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faGithub, faGoogle } from '@fortawesome/free-brands-svg-icons';
 
 // 스타일 컴포넌트 기본 양식 const 작명 = styled.태그요소(div, p, h1...)``; 벡틱
 const Container = styled.div`
@@ -99,6 +101,25 @@ const Button = styled.button`
         background-color: steelblue;
     }
 `;
+const SnsButton = styled.button`
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    background-color: ${props => props.$bgColor || 'gray'};
+    color: ${props => props.$color || 'white'};
+    font-size: 16px;
+    width: 50%;
+    transition: 0.3s;
+    &:hover {
+        background-color: ${(props) => props.$hoverBgColor || '#666'};
+    } // &:hover
+    svg {
+        margin-right: 8px;
+    } // svg
+`;
 
 function Login() {
 
@@ -109,6 +130,8 @@ function Login() {
 
     const navigate = useNavigate(); // useNavigate : 링크에서 쓰는 것
     const dispatch = useDispatch(); // useDispatch : 리덕스에서 쓰는 거라고 함
+    const userState = useSelector(state => state.user);
+    console.log(userState);
 
     const errorMsg = (errorCode) => { // errorMsg(작명) errorCode(정해진 것) 사용
         const firebaseError = {
@@ -139,12 +162,47 @@ function Login() {
             if (userDocSnapshot.exists()) {
                 const userData = userDocSnapshot.data();
                 dispatch(loggedIn(userData));
-                navigate('-1'); // 이전 페이지로 감(=게시판에 있다가 로그인하면 게시판으로 가고, 메인에 있다가 로그인하면 메인에 간다는 뜻)
+                navigate('/'); // '-1' : 이전 페이지로 감(=게시판에 있다가 로그인하면 게시판으로 가고, 메인에 있다가 로그인하면 메인에 간다는 뜻)
             }
 
         } catch(error) {
             setError(errorMsg(error.code));
             console.log(error.code);
+        }
+    }
+
+    const snsLogin = async (data) => {
+        let provider;
+
+        switch(data) {
+            case 'google':
+                provider = new GoogleAuthProvider();
+            break;
+            case 'github':
+                provider = new GithubAuthProvider();
+            break;
+
+            default:
+                return;
+        }
+        try {
+            const result = await signInWithPopup(firebaseAuth, provider);
+            const user = result.user;
+            console.log(user);
+            sessionStorage.setItem("users", user.uid);
+            dispatch(logIn(user.uid));
+            navigate('/member', {
+                state: {
+                    nickname: user.displayName,
+                    email: user.email,
+                    photoURL: user.photoURL
+                }
+            });
+
+
+        } catch(error) {
+            setError(errorMsg(error));
+            console.log(error);
         }
     }
 
@@ -167,6 +225,14 @@ function Login() {
                     <InputWrapper>
                         <NavLink to="/findemail">이메일/비밀번호 재설정</NavLink>
                         <NavLink to="/member">회원가입</NavLink>
+                    </InputWrapper>
+                    <InputWrapper>
+                        <SnsButton onClick={() => {snsLogin('google')}} $bgColor="#db4437" $hoverBgColor="#b33225">
+                            <FontAwesomeIcon icon={faGoogle} /> Login With Google
+                        </SnsButton>
+                        <SnsButton onClick={() => {snsLogin('github')}} $bgColor="#333" $hoverBgColor="#111">
+                            <FontAwesomeIcon icon={faGithub} /> Login With Github
+                        </SnsButton>
                     </InputWrapper>
                 </SignUp>
             </Container>
